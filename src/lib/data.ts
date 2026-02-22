@@ -13,7 +13,7 @@ export const tools = [
     image: "/images/rfp-gremlin.png",
     tags: ["growth"] as TeamSlug[],
     description: "Produce and submit RFP responses end to end.",
-    href: "https://rfp-gremlin.ordoschools.app",
+    href: "https://rfp-gremlin.ordoschools.com",
   },
   {
     name: "Road Warrior",
