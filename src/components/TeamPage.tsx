@@ -38,15 +38,14 @@ export default async function TeamPage({
   return (
     <div className="min-h-screen bg-[#f5f5f7]">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-8 py-5">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
+      <header className="bg-white border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-8 py-5 flex items-center justify-between">
           <div className="flex items-center">
             <Link href="/">
-              <Image
-                src="/images/ordo-icon.png"
+              <img
+                src="/images/ordo-logo.svg"
                 alt="Ordo"
-                width={28}
-                height={28}
+                className="h-5 w-auto"
               />
             </Link>
           </div>
@@ -66,15 +65,15 @@ export default async function TeamPage({
 
       <main className="max-w-6xl mx-auto px-8 py-6">
         {/* Navigation Tabs */}
-        <nav className="flex gap-1 mb-8">
+        <nav className="inline-flex items-center gap-0.5 rounded-lg bg-gray-200/60 p-1 mb-8">
           {tabs.map((tab) => (
             <Link
               key={tab.slug}
               href={tab.href}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
                 tab.slug === activeTeam
                   ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700 hover:bg-white/50"
+                  : "text-gray-500 hover:text-gray-900 hover:bg-white/50"
               }`}
             >
               {tab.label}
@@ -86,7 +85,7 @@ export default async function TeamPage({
         {filteredBookmarks.length > 0 && (
           <section className="mb-10">
             <h2 className="text-lg font-semibold text-gray-900 mb-3">
-              Bookmarks
+              {tabs.find((t) => t.slug === activeTeam)?.label ?? "Team"}
             </h2>
             <div className="flex flex-wrap gap-3">
               {filteredBookmarks.map((link) => (
@@ -109,38 +108,51 @@ export default async function TeamPage({
           <section className="mb-10">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Tools</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {filteredTools.map((tool) => (
-                <a
-                  key={tool.name}
-                  href={tool.href}
-                  className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow border border-gray-100 flex flex-col"
-                >
-                  <div className="bg-gray-50 rounded-lg aspect-[5/4] w-full mb-4 overflow-hidden relative">
-                    <Image
-                      src={tool.image}
-                      alt={tool.name}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="flex gap-1.5 mb-2 flex-wrap">
-                    {tool.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className={`text-[11px] font-medium uppercase tracking-wide px-2 py-0.5 rounded-full ${tagColors[tag]}`}
-                      >
-                        {tagLabels[tag]}
-                      </span>
-                    ))}
-                  </div>
-                  <h3 className="font-semibold text-sm text-gray-900 mb-1">
-                    {tool.name}
-                  </h3>
-                  <p className="text-xs text-gray-500 leading-relaxed">
-                    {tool.description}
-                  </p>
-                </a>
-              ))}
+              {filteredTools.map((tool) => {
+                const isDisabled = "disabled" in tool && tool.disabled;
+                const Wrapper = isDisabled ? "div" : "a";
+                return (
+                  <Wrapper
+                    key={tool.name}
+                    {...(isDisabled ? {} : { href: tool.href })}
+                    className={`rounded-xl p-4 border flex flex-col ${
+                      isDisabled
+                        ? "bg-gray-50 border-gray-200 opacity-50 cursor-not-allowed"
+                        : "bg-white border-gray-100 shadow-sm hover:shadow-md transition-shadow"
+                    }`}
+                  >
+                    <div className="bg-gray-50 rounded-lg aspect-[5/4] w-full mb-4 overflow-hidden relative">
+                      <Image
+                        src={tool.image}
+                        alt={tool.name}
+                        fill
+                        className={`object-cover ${isDisabled ? "grayscale" : ""}`}
+                      />
+                    </div>
+                    <div className="flex gap-1.5 mb-2 flex-wrap">
+                      {tool.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className={`text-[11px] font-medium uppercase tracking-wide px-2 py-0.5 rounded-full ${tagColors[tag]}`}
+                        >
+                          {tagLabels[tag]}
+                        </span>
+                      ))}
+                      {isDisabled && (
+                        <span className="text-[11px] font-medium uppercase tracking-wide px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
+                          Coming Soon
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="font-semibold text-sm text-gray-900 mb-1">
+                      {tool.name}
+                    </h3>
+                    <p className="text-xs text-gray-500 leading-relaxed">
+                      {tool.description}
+                    </p>
+                  </Wrapper>
+                );
+              })}
             </div>
           </section>
         )}
@@ -149,9 +161,9 @@ export default async function TeamPage({
         {filteredLinks.length > 0 && (
           <section className="mb-10">
             <h2 className="text-lg font-semibold text-gray-900 mb-3">
-              Quick Links
+              Links
             </h2>
-            <div className="flex flex-wrap items-center gap-1">
+            <div className="flex flex-wrap items-center gap-1 -ml-2">
               {filteredLinks.map((link, index) => (
                 <span key={link.name} className="flex items-center">
                   <a
@@ -172,7 +184,7 @@ export default async function TeamPage({
         {/* HR Section - only on team homepage */}
         {activeTeam === "team" && (
           <section className="mb-10">
-            <h2 className="text-lg font-semibold text-gray-900 mb-3">HR</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-3">General</h2>
             <div className="flex flex-wrap gap-3">
               {hrLinks.map((link) => (
                 <a

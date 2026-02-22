@@ -10,6 +10,9 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: "Ordo Team Homepage",
   description: "Ordo internal team portal",
+  icons: {
+    icon: "/images/favicon.svg",
+  },
 };
 
 export default function RootLayout({
