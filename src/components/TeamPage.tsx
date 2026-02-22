@@ -65,12 +65,12 @@ export default async function TeamPage({
 
       <main className="max-w-6xl mx-auto px-8 py-6">
         {/* Navigation Tabs */}
-        <nav className="inline-flex items-center gap-0.5 rounded-lg bg-gray-200/60 p-1 mb-8">
+        <nav className="inline-flex items-center gap-0.5 rounded-lg bg-gray-200/60 p-1 mb-8 overflow-x-auto scrollbar-hide">
           {tabs.map((tab) => (
             <Link
               key={tab.slug}
               href={tab.href}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+              className={`px-4 py-2.5 sm:px-3 sm:py-1.5 rounded-md text-base sm:text-sm font-medium transition-all ${
                 tab.slug === activeTeam
                   ? "bg-white text-gray-900 shadow-sm"
                   : "text-gray-500 hover:text-gray-900 hover:bg-white/50"
