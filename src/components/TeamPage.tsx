@@ -1,4 +1,5 @@
-import { auth, signOut } from "@/auth";
+import { auth } from "@/auth";
+import { signOutAction } from "@/app/actions";
 import Image from "next/image";
 import Link from "next/link";
 import UserMenu from "@/components/UserMenu";
@@ -44,7 +45,7 @@ export default async function TeamPage({
             <Link href="/">
               <img
                 src="/images/ordo-logo.svg"
-                alt="Ordo"
+                alt="Ordo HQ"
                 className="h-7 sm:h-5 w-auto"
               />
             </Link>
@@ -53,10 +54,7 @@ export default async function TeamPage({
             {session?.user && (
               <UserMenu
                 firstName={session.user.name?.split(" ")[0] ?? session.user.email?.split("@")[0] ?? "User"}
-                signOutAction={async () => {
-                  "use server";
-                  await signOut();
-                }}
+                signOutAction={signOutAction}
               />
             )}
           </div>
