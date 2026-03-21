@@ -1,12 +1,15 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 
 export default function UserMenu({
   firstName,
+  isAdmin,
   signOutAction,
 }: {
   firstName: string;
+  isAdmin?: boolean;
   signOutAction: () => Promise<void>;
 }) {
   const [open, setOpen] = useState(false);
@@ -46,6 +49,15 @@ export default function UserMenu({
 
       {open && (
         <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+              onClick={() => setOpen(false)}
+            >
+              Admin
+            </Link>
+          )}
           <form action={signOutAction}>
             <button
               type="submit"
