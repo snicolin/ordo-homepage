@@ -149,16 +149,16 @@ fi
 
 # ── Switch Caddy upstream ──
 echo "==> Switching traffic to ${TARGET}..."
-# Write to the same inode (sed -i creates a new inode, breaking Docker bind mounts)
-CADDY_CONTENT=$(sed "s/\(blue\|green\):3000/${TARGET}:3000/g" "$CADDYFILE")
-printf '%s\n' "$CADDY_CONTENT" > "$CADDYFILE"
-docker compose -f ${COMPOSE_FILE} exec caddy caddy reload --config /etc/caddy/Caddyfile
+sed -i "s/\(blue\|green\):3000/${TARGET}:3000/g" "$CADDYFILE"
 
-# Verify the switch
-sleep 1
-VERIFY=$(grep -oP '(blue|green):3000' "$CADDYFILE" | head -1)
-if [ "$VERIFY" != "${TARGET}:3000" ]; then
-    echo "==> ERROR: Caddy switch verification failed. Expected ${TARGET}:3000, got ${VERIFY}"
+# Restart Caddy so it re-establishes the bind mount (SCP creates new inodes)
+docker compose -f ${COMPOSE_FILE} restart caddy
+sleep 2
+
+# Verify the container sees the correct upstream
+CONTAINER_UPSTREAM=$(docker compose -f ${COMPOSE_FILE} exec caddy grep -oP '(blue|green):3000' /etc/caddy/Caddyfile | head -1)
+if [ "$CONTAINER_UPSTREAM" != "${TARGET}:3000" ]; then
+    echo "==> ERROR: Caddy container sees ${CONTAINER_UPSTREAM}, expected ${TARGET}:3000"
     exit 1
 fi
 echo "    Caddy verified: routing to ${TARGET}:3000"
