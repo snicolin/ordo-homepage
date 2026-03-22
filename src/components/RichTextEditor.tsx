@@ -7,6 +7,7 @@ import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import { Node as TiptapNode, mergeAttributes } from "@tiptap/core";
 import { useState, useCallback, useEffect, useRef } from "react";
+import { useClickOutside } from "@/lib/hooks";
 import { sanitizeHtml } from "@/lib/sanitize-html";
 import {
   Bold,
@@ -106,13 +107,7 @@ function BlockTypeDropdown({
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    }
-    if (open) document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [open]);
+  useClickOutside(ref, useCallback(() => setOpen(false), []), open);
 
   const current = BLOCK_TYPES.find((b) => b.value === currentType) ?? BLOCK_TYPES[0];
 

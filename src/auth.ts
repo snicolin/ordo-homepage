@@ -1,9 +1,25 @@
-import NextAuth from "next-auth";
+import NextAuth, { type Session } from "next-auth";
+import { redirect } from "next/navigation";
 import { authConfig } from "@/auth.config";
 import { prisma } from "@/lib/prisma";
 import { isEnvAdmin } from "@/lib/admin";
 
 const ALLOWED_DOMAINS = ["ordoschools.com", "ordo.com"];
+
+export async function requireSession() {
+  let session: Session | null;
+  try {
+    session = await auth();
+  } catch {
+    redirect("/signin");
+  }
+  if (!session) redirect("/signin");
+  return session;
+}
+
+export function getDisplayName(session: Session): string {
+  return session.user?.name?.split(" ")[0] ?? session.user?.email?.split("@")[0] ?? "";
+}
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,

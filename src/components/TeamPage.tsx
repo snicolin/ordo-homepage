@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { requireSession, getDisplayName } from "@/auth";
 import Image from "next/image";
 import AppHeader from "@/components/AppHeader";
 import PillNav from "@/components/PillNav";
@@ -6,27 +6,13 @@ import AlertBar from "@/components/AlertBar";
 import CountdownTimer from "@/components/CountdownTimer";
 import CollapsibleSection from "@/components/CollapsibleSection";
 import { prisma } from "@/lib/prisma";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { containerClass } from "@/lib/styles";
-
-function getNestedValue(obj: unknown, path: string): unknown {
-  return path.split(".").reduce((acc: unknown, key) => {
-    if (acc && typeof acc === "object" && key in (acc as Record<string, unknown>)) {
-      return (acc as Record<string, unknown>)[key];
-    }
-    return undefined;
-  }, obj);
-}
+import { getNestedValue } from "@/lib/utils";
 
 export default async function TeamPage({ pageSlug }: { pageSlug: string }) {
-  let session;
-  try {
-    session = await auth();
-  } catch {
-    redirect("/signin");
-  }
-  if (!session) redirect("/signin");
-  const isAdmin = (session?.user as Record<string, unknown>)?.isAdmin === true;
+  const session = await requireSession();
+  const isAdmin = (session.user as Record<string, unknown>)?.isAdmin === true;
 
   const allPages = await prisma.page.findMany({ orderBy: { order: "asc" } });
 
@@ -91,7 +77,7 @@ export default async function TeamPage({ pageSlug }: { pageSlug: string }) {
   return (
     <div className="min-h-screen bg-background">
       <AppHeader
-        userName={session?.user?.name?.split(" ")[0] ?? session?.user?.email?.split("@")[0]}
+        userName={getDisplayName(session)}
         isAdmin={isAdmin}
         badge="HQ"
       />
@@ -102,7 +88,7 @@ export default async function TeamPage({ pageSlug }: { pageSlug: string }) {
 
         {pageSections.map((ps) => {
           const section = ps.section;
-          const visibleItems = section.items.filter(() => true);
+          const visibleItems = section.items;
           const title = section.title;
           const noItemTypes = ["TEXT", "COUNTDOWN"];
 

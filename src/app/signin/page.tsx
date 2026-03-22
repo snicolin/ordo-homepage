@@ -21,7 +21,7 @@ export default async function SignInPage({
       <div className="bg-card rounded-2xl shadow-lg p-8 max-w-sm w-full text-center">
         <div className="mb-6">
           <Image
-            src="/images/ordo-icon.png"
+            src="/images/ordo-logo.svg"
             alt="Ordo HQ"
             width={48}
             height={48}

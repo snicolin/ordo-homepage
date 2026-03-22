@@ -21,26 +21,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Pencil,
-  Trash2,
-  Megaphone,
-  Info,
-  AlertTriangle,
-  AlertCircle,
-  Bell,
-  Calendar,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-
-const ICON_OPTIONS: { value: string; label: string; Icon: LucideIcon }[] = [
-  { value: "INFO", label: "Info", Icon: Info },
-  { value: "ALERT_TRIANGLE", label: "Warning", Icon: AlertTriangle },
-  { value: "ALERT_CIRCLE", label: "Alert", Icon: AlertCircle },
-  { value: "BELL", label: "Bell", Icon: Bell },
-  { value: "MEGAPHONE", label: "Megaphone", Icon: Megaphone },
-  { value: "CALENDAR", label: "Calendar", Icon: Calendar },
-];
+import { Pencil, Trash2, Megaphone } from "lucide-react";
+import { ALERT_ICONS } from "@/lib/alert-icons";
+import { formatDate } from "@/lib/utils";
 
 type GroupOption = {
   id: string;
@@ -93,14 +76,6 @@ function emptyForm(): AlertForm {
     groupId: "",
     active: true,
   };
-}
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
 }
 
 export default function AdminAlertsPage() {
@@ -198,7 +173,7 @@ export default function AdminAlertsPage() {
                   className="flex items-center gap-3 px-4 py-3 min-h-[48px]"
                 >
                   {(() => {
-                    const match = ICON_OPTIONS.find((o) => o.value === alert.icon);
+                    const match = ALERT_ICONS.find((o) => o.value === alert.icon);
                     const IconComp = match?.Icon ?? Megaphone;
                     return <IconComp className="h-4 w-4 text-muted-foreground shrink-0" />;
                   })()}
@@ -322,7 +297,7 @@ export default function AdminAlertsPage() {
                   <SelectTrigger>
                     <SelectValue>
                       {(() => {
-                        const match = ICON_OPTIONS.find((o) => o.value === editing?.icon);
+                        const match = ALERT_ICONS.find((o) => o.value === editing?.icon);
                         if (!match) return "None";
                         const IconComp = match.Icon;
                         return (
@@ -336,7 +311,7 @@ export default function AdminAlertsPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="NONE">None</SelectItem>
-                    {ICON_OPTIONS.map((opt) => (
+                    {ALERT_ICONS.map((opt) => (
                       <SelectItem key={opt.value} value={opt.value}>
                         <span className="flex items-center gap-2">
                           <opt.Icon className="h-4 w-4" />

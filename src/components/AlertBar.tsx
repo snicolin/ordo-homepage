@@ -1,18 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  X,
-  ChevronRight,
-  ExternalLink,
-  Info,
-  AlertTriangle,
-  AlertCircle,
-  Bell,
-  Megaphone,
-  Calendar,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { X, ChevronRight, ExternalLink } from "lucide-react";
 import {
   Dialog,
   DialogBody,
@@ -20,15 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
-const ICON_MAP: Record<string, LucideIcon> = {
-  INFO: Info,
-  ALERT_TRIANGLE: AlertTriangle,
-  ALERT_CIRCLE: AlertCircle,
-  BELL: Bell,
-  MEGAPHONE: Megaphone,
-  CALENDAR: Calendar,
-};
+import { ALERT_ICON_MAP } from "@/lib/alert-icons";
 
 type Alert = {
   id: string;
@@ -78,7 +59,7 @@ export default function AlertBar() {
         {alerts.map((alert) => {
           const isYellow = alert.color !== "GRAY";
           const isClickable = alert.body || alert.link;
-          const IconComp = alert.icon ? ICON_MAP[alert.icon] : null;
+              const IconComp = alert.icon ? ALERT_ICON_MAP[alert.icon] : null;
 
           return (
             <div
