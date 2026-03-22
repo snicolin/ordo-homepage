@@ -4,6 +4,7 @@ import AppHeader from "@/components/AppHeader";
 import PillNav from "@/components/PillNav";
 import AlertBar from "@/components/AlertBar";
 import CountdownTimer from "@/components/CountdownTimer";
+import CollapsibleSection from "@/components/CollapsibleSection";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { containerClass } from "@/lib/styles";
@@ -104,16 +105,28 @@ export default async function TeamPage({ pageSlug }: { pageSlug: string }) {
           if (section.displayType === "TEXT") {
             if (!section.content) return null;
             const isHtml = /<[a-z][\s\S]*>/i.test(section.content);
+            const contentBlock = (
+              <div className="bg-card rounded-xl border border-border p-6 rich-content text-sm max-w-none">
+                {isHtml ? (
+                  <div dangerouslySetInnerHTML={{ __html: section.content }} />
+                ) : (
+                  <p className="whitespace-pre-wrap">{section.content}</p>
+                )}
+              </div>
+            );
+
+            if (section.collapsible && !section.hideTitle) {
+              return (
+                <CollapsibleSection key={ps.sectionId} title={title}>
+                  {contentBlock}
+                </CollapsibleSection>
+              );
+            }
+
             return (
               <section key={ps.sectionId} className="mb-10">
                 {!section.hideTitle && <h2 className="typo-heading-lg mb-3">{title}</h2>}
-                <div className="bg-card rounded-xl border border-border p-6 rich-content text-sm max-w-none">
-                  {isHtml ? (
-                    <div dangerouslySetInnerHTML={{ __html: section.content }} />
-                  ) : (
-                    <p className="whitespace-pre-wrap">{section.content}</p>
-                  )}
-                </div>
+                {contentBlock}
               </section>
             );
           }

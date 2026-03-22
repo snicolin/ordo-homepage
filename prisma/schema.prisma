@@ -35,8 +35,9 @@ model Section {
   id          String        @id @default(cuid())
   title       String
   displayType DisplayType
-  hideTitle   Boolean       @default(false)
-  content     String?
+  hideTitle    Boolean       @default(false)
+  collapsible  Boolean       @default(false)
+  content      String?
   targetDate  DateTime?
   items       Item[]
   pages       PageSection[]

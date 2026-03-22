@@ -326,6 +326,7 @@ export default function PageDetailPage() {
                       <span className="typo-label text-foreground">{title}</span>
                       <Badge variant="outline" className="text-xs font-normal">{ps.section.displayType}</Badge>
                       {ps.section.hideTitle && <Badge variant="secondary" className="text-xs font-normal">hidden title</Badge>}
+                      {ps.section.collapsible && <Badge variant="secondary" className="text-xs font-normal">collapsible</Badge>}
                       <span className="typo-meta">{itemCount} {itemCount === 1 ? "item" : "items"}</span>
                     </div>
                     <AdminRowActions actions={[
@@ -479,7 +480,7 @@ export default function PageDetailPage() {
           <DialogHeader>
             <DialogTitle>{editingSection?.id ? "Edit Section" : "Add Section"}</DialogTitle>
           </DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); saveSection(); }}>
+          <form onSubmit={(e) => { e.preventDefault(); saveSection(); }} className="flex flex-col flex-1 min-h-0">
             <DialogBody className="space-y-4 py-2">
               <div className="space-y-2">
                 <Label htmlFor="section-title">Title</Label>
@@ -553,6 +554,16 @@ export default function PageDetailPage() {
                 />
                 <Label htmlFor="section-hide-title" className="cursor-pointer">Hide title on page</Label>
               </div>
+              {editingSection?.displayType === "TEXT" && (
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="section-collapsible"
+                    checked={editingSection?.collapsible ?? false}
+                    onCheckedChange={(checked) => setEditingSection({ ...editingSection, collapsible: !!checked })}
+                  />
+                  <Label htmlFor="section-collapsible" className="cursor-pointer">Collapsible (click title to expand)</Label>
+                </div>
+              )}
             </DialogBody>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setEditingSection(null)} className="cursor-pointer">Cancel</Button>

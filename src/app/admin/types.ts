@@ -11,6 +11,7 @@ export type Section = {
   id: string;
   title: string;
   hideTitle: boolean;
+  collapsible?: boolean;
   displayType: "BUTTON" | "LINK" | "TILE" | "METRIC" | "TEXT" | "COUNTDOWN";
   content?: string | null;
   targetDate?: string | null;
