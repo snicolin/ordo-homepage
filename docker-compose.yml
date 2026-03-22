@@ -38,6 +38,7 @@ services:
     environment:
       DATABASE_URL: postgresql://ordo:${POSTGRES_PASSWORD:-ordo_dev_password}@db:5432/ordo_hq
       AUTH_SECRET: ${AUTH_SECRET}
+      AUTH_URL: ${AUTH_URL:-https://hq.ordo.com}
       AUTH_TRUST_HOST: "true"
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
