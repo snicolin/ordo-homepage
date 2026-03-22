@@ -19,7 +19,12 @@ function getNestedValue(obj: unknown, path: string): unknown {
 }
 
 export default async function TeamPage({ pageSlug }: { pageSlug: string }) {
-  const session = await auth();
+  let session;
+  try {
+    session = await auth();
+  } catch {
+    redirect("/signin");
+  }
   if (!session) redirect("/signin");
   const isAdmin = (session?.user as Record<string, unknown>)?.isAdmin === true;
 
