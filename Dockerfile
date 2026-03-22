@@ -20,6 +20,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=builder /app/src/generated ./src/generated
 COPY prisma ./prisma
+COPY prisma.config.ts ./
 COPY scripts/deploy.sh ./scripts/deploy.sh
 RUN chmod +x ./scripts/deploy.sh
 CMD ["./scripts/deploy.sh"]
