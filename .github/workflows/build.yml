@@ -57,5 +57,5 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
-            cd ~/ordo-hq
+            cd /opt/ordo-hq
             ./scripts/deploy-zero-downtime.sh
