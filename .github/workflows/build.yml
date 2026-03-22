@@ -58,4 +58,5 @@ jobs:
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
             cd /opt/ordo-hq
+            git pull origin main
             ./scripts/deploy-zero-downtime.sh
