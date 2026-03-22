@@ -5,7 +5,7 @@ import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
-import { Node, mergeAttributes } from "@tiptap/core";
+import { Node as TiptapNode, mergeAttributes } from "@tiptap/core";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { sanitizeHtml } from "@/lib/sanitize-html";
 import {
@@ -25,7 +25,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-const WarningBlock = Node.create({
+const WarningBlock = TiptapNode.create({
   name: "warning",
   group: "block",
   content: "inline*",
@@ -43,10 +43,10 @@ const WarningBlock = Node.create({
     return {
       toggleWarning:
         () =>
-        ({ commands }) => {
+        ({ commands }: { commands: Record<string, (...args: unknown[]) => boolean> }) => {
           return commands.toggleNode(this.name, "paragraph");
         },
-    };
+    } as Record<string, (...args: unknown[]) => unknown>;
   },
 });
 

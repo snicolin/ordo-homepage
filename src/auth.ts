@@ -64,8 +64,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as Record<string, unknown>).isAdmin = token.isAdmin ?? false;
-        (session.user as Record<string, unknown>).defaultPageSlug = token.defaultPageSlug ?? null;
+        (session.user as unknown as Record<string, unknown>).isAdmin = token.isAdmin ?? false;
+        (session.user as unknown as Record<string, unknown>).defaultPageSlug = token.defaultPageSlug ?? null;
       }
       return session;
     },

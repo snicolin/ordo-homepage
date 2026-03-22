@@ -35,7 +35,7 @@ function DialogStepper({
   const isFirst = step === 0
   const isLast = step === total - 1
   const currentStep = steps[step]
-  const label = isValidElement(currentStep) ? currentStep.props.label : ""
+  const label = isValidElement(currentStep) ? (currentStep.props as Record<string, unknown>).label as string ?? "" : ""
 
   return (
     <>

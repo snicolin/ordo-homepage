@@ -109,6 +109,8 @@ export default function AdminAlertsPage() {
   const [groups, setGroups] = useState<GroupOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<AlertForm | null>(null);
+  const patchEditing = (patch: Partial<AlertForm>) =>
+    setEditing((prev) => (prev ? { ...prev, ...patch } : null));
 
   const fetchAlerts = useCallback(async () => {
     const res = await fetch("/api/admin/alerts");
@@ -265,7 +267,7 @@ export default function AdminAlertsPage() {
                   id="alert-title"
                   value={editing?.title ?? ""}
                   onChange={(e) =>
-                    setEditing((prev) => prev && { ...prev, title: e.target.value })
+                    patchEditing({ title: e.target.value })
                   }
                 />
               </div>
@@ -279,7 +281,7 @@ export default function AdminAlertsPage() {
                   placeholder="Leave empty if the title is the full message"
                   value={editing?.body ?? ""}
                   onChange={(e) =>
-                    setEditing((prev) => prev && { ...prev, body: e.target.value })
+                    patchEditing({ body: e.target.value })
                   }
                 />
               </div>
@@ -288,7 +290,7 @@ export default function AdminAlertsPage() {
                 <div className="flex gap-2">
                   <button
                     type="button"
-                    onClick={() => setEditing((prev) => prev && { ...prev, color: "YELLOW" })}
+                    onClick={() => patchEditing({ color: "YELLOW" })}
                     className={`flex-1 h-9 rounded-md border-2 transition-colors cursor-pointer bg-yellow-100 ${
                       editing?.color === "YELLOW" ? "border-yellow-500 ring-2 ring-yellow-200" : "border-yellow-200 hover:border-yellow-300"
                     }`}
@@ -297,7 +299,7 @@ export default function AdminAlertsPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setEditing((prev) => prev && { ...prev, color: "GRAY" })}
+                    onClick={() => patchEditing({ color: "GRAY" })}
                     className={`flex-1 h-9 rounded-md border-2 transition-colors cursor-pointer bg-gray-100 ${
                       editing?.color === "GRAY" ? "border-gray-500 ring-2 ring-gray-200" : "border-gray-200 hover:border-gray-300"
                     }`}
@@ -311,7 +313,7 @@ export default function AdminAlertsPage() {
                 <Select
                   value={editing?.icon || "NONE"}
                   onValueChange={(v) =>
-                    setEditing((prev) => prev && { ...prev, icon: v === "NONE" ? "" : v })
+                    patchEditing({ icon: !v || v === "NONE" ? "" : v })
                   }
                 >
                   <SelectTrigger>
@@ -354,7 +356,7 @@ export default function AdminAlertsPage() {
                   placeholder="https://example.com"
                   value={editing?.link ?? ""}
                   onChange={(e) =>
-                    setEditing((prev) => prev && { ...prev, link: e.target.value })
+                    patchEditing({ link: e.target.value })
                   }
                 />
               </div>
@@ -365,7 +367,7 @@ export default function AdminAlertsPage() {
                   type="date"
                   value={editing?.expiresAt ?? ""}
                   onChange={(e) =>
-                    setEditing((prev) => prev && { ...prev, expiresAt: e.target.value })
+                    patchEditing({ expiresAt: e.target.value })
                   }
                 />
               </div>
@@ -375,7 +377,7 @@ export default function AdminAlertsPage() {
                   value={editing?.targetType ?? "ALL"}
                   onValueChange={(v) =>
                     setEditing((prev) =>
-                      prev && { ...prev, targetType: v, groupId: v === "ALL" ? "" : prev.groupId }
+                      prev ? { ...prev, targetType: v ?? "ALL", groupId: !v || v === "ALL" ? "" : prev.groupId } : null
                     )
                   }
                 >
@@ -396,7 +398,7 @@ export default function AdminAlertsPage() {
                   <Select
                     value={editing.groupId}
                     onValueChange={(v) =>
-                      setEditing((prev) => prev && { ...prev, groupId: v })
+                      patchEditing({ groupId: v ?? "" })
                     }
                   >
                     <SelectTrigger>
@@ -419,7 +421,7 @@ export default function AdminAlertsPage() {
                   id="alert-dismissible"
                   checked={editing?.dismissible ?? true}
                   onCheckedChange={(checked) =>
-                    setEditing((prev) => prev && { ...prev, dismissible: !!checked })
+                    patchEditing({ dismissible: !!checked })
                   }
                 />
                 <Label htmlFor="alert-dismissible" className="cursor-pointer">
@@ -431,7 +433,7 @@ export default function AdminAlertsPage() {
                   id="alert-active"
                   checked={editing?.active ?? true}
                   onCheckedChange={(checked) =>
-                    setEditing((prev) => prev && { ...prev, active: !!checked })
+                    patchEditing({ active: !!checked })
                   }
                 />
                 <Label htmlFor="alert-active" className="cursor-pointer">
