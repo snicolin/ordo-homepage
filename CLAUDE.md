@@ -35,7 +35,7 @@ This project uses **Bun**. Always use `bun` instead of `npm` or `npx`.
 2. `git add` selectively, then `git diff --staged --stat`
 3. Read modified files for context
 4. Commit with descriptive message
-5. `git push origin main` (triggers Vercel deploy)
+5. `git push origin main` (triggers CI/CD pipeline)
 
 ### When user types "p" (pull)
 1. `git stash` — save local changes
@@ -61,7 +61,30 @@ Access is restricted to `@ordoschools.com` and `@ordo.com` Google accounts. Conf
 
 ## Deployment
 
-Pushes to `main` auto-deploy via Vercel's GitHub integration.
+Pushes to `main` trigger a GitHub Actions pipeline: lint/typecheck, Docker build via Depot, push to GHCR, then blue-green deploy to a DigitalOcean droplet.
+
+### Architecture
+
+- **Blue-green** containers behind Caddy reverse proxy
+- **GHCR** for container images (SHA-tagged)
+- **SCP** syncs deploy files to server (no git clone on server)
+- **Prisma migrations** run automatically; destructive migrations block the deploy
+
+### Key files
+
+| File | Purpose |
+|------|---------|
+| `Dockerfile` | Multi-stage build (deps, builder, runner) |
+| `docker-compose.yml` | Blue/green services, Postgres, Caddy |
+| `Caddyfile` | Reverse proxy config (upstream switches between blue/green) |
+| `scripts/deploy.sh` | Blue-green deploy script (lock, migrate, health check, switch) |
+| `.github/workflows/build.yml` | CI/CD pipeline |
+
+### Manual deploy
+
+```bash
+ssh root@<server> "cd /opt/ordo-hq && ./scripts/deploy.sh <image_tag>"
+```
 
 ## Code Style
 

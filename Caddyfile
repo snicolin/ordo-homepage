@@ -1,5 +1,5 @@
 hq.ordo.com {
-    reverse_proxy app:3000
+    reverse_proxy blue:3000
 }
 
 hq.ordoschools.com {

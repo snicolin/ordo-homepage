@@ -11,7 +11,7 @@ Internal team portal for Ordo. Authenticated users see pages of organized links/
 - **UI**: React 19, Tailwind CSS v4, shadcn/ui components in `src/components/ui/`
 - **Auth**: NextAuth v5 — Google OAuth, domain-restricted (see `src/auth.ts`)
 - **Database**: PostgreSQL via Prisma (schema: `prisma/schema.prisma`, client: `src/generated/prisma/`)
-- **Deployment**: Vercel (push to `main` auto-deploys)
+- **Deployment**: GitHub Actions CI/CD, Docker (blue-green), Caddy reverse proxy, DigitalOcean droplet
 
 ## Architecture
 
@@ -67,6 +67,22 @@ src/
 - **Alert** — announcements with title, body, color, icon, link, expiry, targeting (all or group), and dismissible flag.
 - **AlertDismissal** — tracks which users dismissed which alerts.
 - **Setting** — key-value config (homepage_mode, nav_visible, nav_position).
+
+## Deployment Architecture
+
+- **Blue-green** deploy: two containers (`blue`/`green`) behind Caddy; deploy script swaps the active slot
+- **CI/CD**: push to `main` triggers `.github/workflows/build.yml` (lint, build via Depot, push to GHCR, SCP + SSH deploy)
+- **Migrations**: `scripts/deploy.sh` auto-runs additive Prisma migrations; blocks on destructive ones (DROP/TRUNCATE)
+- **No git on server** — CI SCPs `docker-compose.yml`, `Caddyfile`, `scripts/deploy.sh` to `/opt/ordo-hq`
+
+### Deploy files
+
+| File | Purpose |
+|------|---------|
+| `Dockerfile` | Multi-stage: deps (bun), builder (bun), runner (node:20-slim) |
+| `docker-compose.yml` | blue/green app services, Postgres, Caddy |
+| `Caddyfile` | Reverse proxy; upstream switches between `blue:3000` / `green:3000` |
+| `scripts/deploy.sh` | Blue-green deploy (lock, pull, migrate, health check, Caddy switch) |
 
 ## Key Patterns
 

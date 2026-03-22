@@ -14,18 +14,7 @@ COPY . .
 RUN bunx prisma generate
 RUN bun run build
 
-# Stage 3: Init (migrations + seed) — used by docker-compose "init" service
-FROM oven/bun:1-slim AS init
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=builder /app/src/generated ./src/generated
-COPY prisma ./prisma
-COPY prisma.config.ts ./
-COPY scripts/deploy.sh ./scripts/deploy.sh
-RUN chmod +x ./scripts/deploy.sh
-CMD ["./scripts/deploy.sh"]
-
-# Stage 4: Runtime
+# Stage 3: Runtime
 FROM node:20-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
@@ -41,7 +30,17 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# Prisma CLI + schema for running migrations via deploy script
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./prisma.config.ts
+
 USER nextjs
 EXPOSE 3000
+
+HEALTHCHECK --interval=10s --timeout=3s --start-period=15s --retries=3 \
+  CMD curl -f http://localhost:3000/api/health || exit 1
 
 CMD ["node", "server.js"]

@@ -1,3 +1,24 @@
+x-app: &app
+  image: ghcr.io/snicolin/ordo-hq:${IMAGE_TAG:-latest}
+  restart: unless-stopped
+  expose:
+    - "3000"
+  environment:
+    DATABASE_URL: postgresql://ordo:${POSTGRES_PASSWORD:-ordo_dev_password}@db:5432/ordo_hq
+    AUTH_SECRET: ${AUTH_SECRET}
+    AUTH_URL: ${AUTH_URL:-https://hq.ordo.com}
+    AUTH_TRUST_HOST: "true"
+    GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+    GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+    ADMIN_EMAILS: ${ADMIN_EMAILS:-hunter@ordoschools.com,sheila@ordoschools.com}
+    S3_BUCKET: ${S3_BUCKET:-hq-space}
+    S3_REGION: ${S3_REGION:-sfo3}
+    S3_ENDPOINT: ${S3_ENDPOINT:-https://sfo3.digitaloceanspaces.com}
+    S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-}
+    S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-}
+  volumes:
+    - uploads:/app/public/uploads
+
 services:
   db:
     image: postgres:16-alpine
@@ -14,49 +35,13 @@ services:
       timeout: 5s
       retries: 5
 
-  init:
-    build:
-      context: .
-      target: init
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      DATABASE_URL: postgresql://ordo:${POSTGRES_PASSWORD:-ordo_dev_password}@db:5432/ordo_hq
-      ADMIN_EMAILS: ${ADMIN_EMAILS:-hunter@ordoschools.com,sheila@ordoschools.com}
-      SEED_ON_DEPLOY: ${SEED_ON_DEPLOY:-false}
-    restart: "no"
+  blue:
+    <<: *app
+    container_name: ordo-hq-blue
 
-  app:
-    image: ghcr.io/snicolin/ordo-hq:latest
-    build: .
-    restart: unless-stopped
-    expose:
-      - "3000"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-      start_period: 15s
-    depends_on:
-      init:
-        condition: service_completed_successfully
-    environment:
-      DATABASE_URL: postgresql://ordo:${POSTGRES_PASSWORD:-ordo_dev_password}@db:5432/ordo_hq
-      AUTH_SECRET: ${AUTH_SECRET}
-      AUTH_URL: ${AUTH_URL:-https://hq.ordo.com}
-      AUTH_TRUST_HOST: "true"
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
-      ADMIN_EMAILS: ${ADMIN_EMAILS:-hunter@ordoschools.com,sheila@ordoschools.com}
-      S3_BUCKET: ${S3_BUCKET:-hq-space}
-      S3_REGION: ${S3_REGION:-sfo3}
-      S3_ENDPOINT: ${S3_ENDPOINT:-https://sfo3.digitaloceanspaces.com}
-      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-}
-      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-}
-    volumes:
-      - uploads:/app/public/uploads
+  green:
+    <<: *app
+    container_name: ordo-hq-green
 
   caddy:
     image: caddy:2-alpine
@@ -72,8 +57,6 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
-    depends_on:
-      - app
 
 volumes:
   pgdata:

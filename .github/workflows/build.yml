@@ -27,8 +27,14 @@ jobs:
       contents: read
       packages: write
       id-token: write
+    outputs:
+      short_sha: ${{ steps.sha.outputs.short }}
     steps:
       - uses: actions/checkout@v5
+
+      - name: Get short SHA
+        id: sha
+        run: echo "short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - uses: depot/setup-action@v1
 
@@ -50,14 +56,34 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      packages: read
     steps:
-      - uses: appleboy/ssh-action@v1
+      - uses: actions/checkout@v5
+
+      - name: Sync deployment files to server
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
+          source: "docker-compose.yml,Caddyfile,scripts/deploy.sh"
+          target: /opt/ordo-hq
+
+      - name: Deploy
+        uses: appleboy/ssh-action@v1
+        env:
+          IMAGE_TAG: ${{ needs.build.outputs.short_sha }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_USER: ${{ github.actor }}
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          envs: IMAGE_TAG,GHCR_TOKEN,GHCR_USER
           script: |
+            set -e
+            echo "${GHCR_TOKEN}" | docker login ghcr.io -u "${GHCR_USER}" --password-stdin
             cd /opt/ordo-hq
-            git fetch origin main
-            git reset --hard origin/main
-            ./scripts/deploy-zero-downtime.sh
+            chmod +x scripts/deploy.sh
+            ./scripts/deploy.sh ${IMAGE_TAG}

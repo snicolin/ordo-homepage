@@ -87,7 +87,15 @@ For dynamic options (IDs as values), resolve the label from your data:
 
 - Never auto-add `.env*` files.
 - Never commit secrets.
-- `g` = commit + push to main. `p` = pull. `pf` = force reset to origin/main.
+- `g` = commit + push to main (triggers CI/CD pipeline). `p` = pull. `pf` = force reset to origin/main.
+
+## Deployment
+
+- **Blue-green** via `scripts/deploy.sh` — don't modify deploy files without understanding the full flow.
+- Docker Compose uses `x-app` YAML anchor — edit the anchor, not individual services.
+- `Caddyfile` upstream (`blue:3000` / `green:3000`) is managed by the deploy script — don't hardcode a slot.
+- The `api/health` route (`src/app/api/health/route.ts`) must stay unauthenticated — it's used by Docker health checks.
+- Prisma CLI + schema are bundled in the Docker image for migration support.
 
 ## Don't
 
