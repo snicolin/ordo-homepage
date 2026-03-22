@@ -64,7 +64,11 @@ export default function AdminContentPage() {
   }, []);
 
   useEffect(() => {
-    Promise.all([fetchPages(), fetchGroups(), fetchSettings()]).then(() => setLoading(false));
+    async function load() {
+      await Promise.all([fetchPages(), fetchGroups(), fetchSettings()]);
+      setLoading(false);
+    }
+    load();
   }, [fetchPages, fetchGroups, fetchSettings]);
 
   async function updateSetting(key: string, value: string) {

@@ -101,7 +101,11 @@ export default function AdminUsersPage() {
   }, []);
 
   useEffect(() => {
-    Promise.all([fetchPages(), fetchUsers(), fetchGroups()]).then(() => setLoading(false));
+    async function load() {
+      await Promise.all([fetchPages(), fetchUsers(), fetchGroups()]);
+      setLoading(false);
+    }
+    load();
   }, [fetchPages, fetchUsers, fetchGroups]);
 
   async function toggleAdmin(userId: string, newStatus: boolean) {

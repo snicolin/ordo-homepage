@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -126,7 +125,11 @@ export default function AdminAlertsPage() {
   }, []);
 
   useEffect(() => {
-    Promise.all([fetchAlerts(), fetchGroups()]).then(() => setLoading(false));
+    async function load() {
+      await Promise.all([fetchAlerts(), fetchGroups()]);
+      setLoading(false);
+    }
+    load();
   }, [fetchAlerts, fetchGroups]);
 
   function openCreate() {
