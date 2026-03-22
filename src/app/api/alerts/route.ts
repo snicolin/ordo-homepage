@@ -19,7 +19,7 @@ export async function GET() {
 
   const now = new Date();
 
-  const banners = await prisma.banner.findMany({
+  const alerts = await prisma.alert.findMany({
     where: {
       active: true,
       expiresAt: { gt: now },
@@ -44,5 +44,5 @@ export async function GET() {
     },
   });
 
-  return NextResponse.json(banners);
+  return NextResponse.json(alerts);
 }

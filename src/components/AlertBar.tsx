@@ -30,7 +30,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   CALENDAR: Calendar,
 };
 
-type Banner = {
+type Alert = {
   id: string;
   title: string;
   body: string | null;
@@ -40,49 +40,49 @@ type Banner = {
   dismissible: boolean;
 };
 
-export default function BannerBar() {
-  const [banners, setBanners] = useState<Banner[]>([]);
-  const [selectedBanner, setSelectedBanner] = useState<Banner | null>(null);
+export default function AlertBar() {
+  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
 
   useEffect(() => {
-    fetch("/api/banners")
+    fetch("/api/alerts")
       .then((res) => (res.ok ? res.json() : []))
-      .then((data) => setBanners(data))
+      .then((data) => setAlerts(data))
       .catch(() => {});
   }, []);
 
-  async function dismiss(bannerId: string) {
-    setBanners((prev) => prev.filter((b) => b.id !== bannerId));
-    await fetch("/api/banners/dismiss", {
+  async function dismiss(alertId: string) {
+    setAlerts((prev) => prev.filter((a) => a.id !== alertId));
+    await fetch("/api/alerts/dismiss", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ bannerId }),
+      body: JSON.stringify({ alertId }),
     });
   }
 
-  function handleBannerClick(banner: Banner) {
-    if (!banner.body && banner.link) {
-      window.open(banner.link, "_blank", "noopener,noreferrer");
+  function handleAlertClick(alert: Alert) {
+    if (!alert.body && alert.link) {
+      window.open(alert.link, "_blank", "noopener,noreferrer");
       return;
     }
-    if (banner.body) {
-      setSelectedBanner(banner);
+    if (alert.body) {
+      setSelectedAlert(alert);
     }
   }
 
-  if (banners.length === 0) return null;
+  if (alerts.length === 0) return null;
 
   return (
     <>
       <div className="space-y-2 mb-6">
-        {banners.map((banner) => {
-          const isYellow = banner.color !== "GRAY";
-          const isClickable = banner.body || banner.link;
-          const IconComp = banner.icon ? ICON_MAP[banner.icon] : null;
+        {alerts.map((alert) => {
+          const isYellow = alert.color !== "GRAY";
+          const isClickable = alert.body || alert.link;
+          const IconComp = alert.icon ? ICON_MAP[alert.icon] : null;
 
           return (
             <div
-              key={banner.id}
+              key={alert.id}
               className={`flex items-center gap-3 rounded-lg px-4 py-3 border ${
                 isYellow
                   ? "bg-yellow-50 border-yellow-200"
@@ -93,21 +93,21 @@ export default function BannerBar() {
                 className={`flex-1 min-w-0 flex items-center gap-2 ${
                   isClickable ? "cursor-pointer" : ""
                 }`}
-                onClick={() => handleBannerClick(banner)}
+                onClick={() => handleAlertClick(alert)}
               >
                 {IconComp && (
                   <IconComp className={`h-4 w-4 shrink-0 ${isYellow ? "text-yellow-700" : "text-muted-foreground"}`} />
                 )}
                 <p className={`typo-label truncate ${isYellow ? "text-yellow-900" : "text-foreground"}`}>
-                  {banner.title}
+                  {alert.title}
                 </p>
                 {isClickable && (
                   <ChevronRight className={`h-4 w-4 shrink-0 ${isYellow ? "text-yellow-400" : "text-muted-foreground/60"}`} />
                 )}
               </div>
-              {banner.dismissible && (
+              {alert.dismissible && (
                 <button
-                  onClick={() => dismiss(banner.id)}
+                  onClick={() => dismiss(alert.id)}
                   className={`shrink-0 h-10 w-10 md:h-7 md:w-7 inline-flex items-center justify-center rounded-md transition-colors cursor-pointer ${
                     isYellow
                       ? "text-yellow-400 hover:text-yellow-600 hover:bg-yellow-100"
@@ -123,20 +123,20 @@ export default function BannerBar() {
       </div>
 
       <Dialog
-        open={!!selectedBanner}
-        onOpenChange={(open) => !open && setSelectedBanner(null)}
+        open={!!selectedAlert}
+        onOpenChange={(open) => !open && setSelectedAlert(null)}
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{selectedBanner?.title}</DialogTitle>
+            <DialogTitle>{selectedAlert?.title}</DialogTitle>
           </DialogHeader>
           <DialogBody className="py-2 space-y-3">
             <p className="typo-body text-muted-foreground whitespace-pre-wrap">
-              {selectedBanner?.body}
+              {selectedAlert?.body}
             </p>
-            {selectedBanner?.link && (
+            {selectedAlert?.link && (
               <a
-                href={selectedBanner.link}
+                href={selectedAlert.link}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 typo-label text-blue-600 hover:text-blue-800 transition-colors"

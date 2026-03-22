@@ -10,12 +10,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { AdminLoading, AdminEmpty, AdminSectionHeader, AdminCard, AdminRowActions } from "../components";
 import {
   Dialog,
-  DialogBody,
   DialogContent,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { DialogStepper, DialogStep } from "@/components/ui/dialog-stepper";
 import {
   Select,
   SelectContent,
@@ -49,7 +48,7 @@ type GroupOption = {
   name: string;
 };
 
-type BannerData = {
+type AlertData = {
   id: string;
   title: string;
   body: string | null;
@@ -66,7 +65,7 @@ type BannerData = {
   _count?: { dismissals: number };
 };
 
-type BannerForm = {
+type AlertForm = {
   id?: string;
   title: string;
   body: string;
@@ -80,7 +79,7 @@ type BannerForm = {
   active: boolean;
 };
 
-function emptyForm(): BannerForm {
+function emptyForm(): AlertForm {
   const oneWeek = new Date();
   oneWeek.setDate(oneWeek.getDate() + 7);
   return {
@@ -105,15 +104,15 @@ function formatDate(iso: string) {
   });
 }
 
-export default function AdminBannersPage() {
-  const [banners, setBanners] = useState<BannerData[]>([]);
+export default function AdminAlertsPage() {
+  const [alerts, setAlerts] = useState<AlertData[]>([]);
   const [groups, setGroups] = useState<GroupOption[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState<BannerForm | null>(null);
+  const [editing, setEditing] = useState<AlertForm | null>(null);
 
-  const fetchBanners = useCallback(async () => {
-    const res = await fetch("/api/admin/banners");
-    if (res.ok) setBanners(await res.json());
+  const fetchAlerts = useCallback(async () => {
+    const res = await fetch("/api/admin/alerts");
+    if (res.ok) setAlerts(await res.json());
   }, []);
 
   const fetchGroups = useCallback(async () => {
@@ -125,33 +124,33 @@ export default function AdminBannersPage() {
   }, []);
 
   useEffect(() => {
-    Promise.all([fetchBanners(), fetchGroups()]).then(() => setLoading(false));
-  }, [fetchBanners, fetchGroups]);
+    Promise.all([fetchAlerts(), fetchGroups()]).then(() => setLoading(false));
+  }, [fetchAlerts, fetchGroups]);
 
   function openCreate() {
     setEditing(emptyForm());
   }
 
-  function openEdit(b: BannerData) {
+  function openEdit(a: AlertData) {
     setEditing({
-      id: b.id,
-      title: b.title,
-      body: b.body ?? "",
-      color: b.color,
-      icon: b.icon ?? "",
-      link: b.link ?? "",
-      dismissible: b.dismissible,
-      expiresAt: b.expiresAt.slice(0, 10),
-      targetType: b.targetType,
-      groupId: b.groupId ?? "",
-      active: b.active,
+      id: a.id,
+      title: a.title,
+      body: a.body ?? "",
+      color: a.color,
+      icon: a.icon ?? "",
+      link: a.link ?? "",
+      dismissible: a.dismissible,
+      expiresAt: a.expiresAt.slice(0, 10),
+      targetType: a.targetType,
+      groupId: a.groupId ?? "",
+      active: a.active,
     });
   }
 
   async function save() {
     if (!editing) return;
     const method = editing.id ? "PUT" : "POST";
-    const res = await fetch("/api/admin/banners", {
+    const res = await fetch("/api/admin/alerts", {
       method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -164,14 +163,14 @@ export default function AdminBannersPage() {
     });
     if (res.ok) {
       setEditing(null);
-      await fetchBanners();
+      await fetchAlerts();
     }
   }
 
-  async function deleteBanner(id: string) {
-    if (!confirm("Delete this banner?")) return;
-    await fetch(`/api/admin/banners?id=${id}`, { method: "DELETE" });
-    await fetchBanners();
+  async function deleteAlert(id: string) {
+    if (!confirm("Delete this alert?")) return;
+    await fetch(`/api/admin/alerts?id=${id}`, { method: "DELETE" });
+    await fetchAlerts();
   }
 
   function isExpired(expiresAt: string) {
@@ -184,30 +183,30 @@ export default function AdminBannersPage() {
     <>
       <div className="space-y-8">
         <section>
-          <AdminSectionHeader title="Banners" addLabel="Add Banner" onAdd={openCreate} />
+          <AdminSectionHeader title="Alerts" addLabel="Add Alert" onAdd={openCreate} />
           <AdminCard>
-            {banners.map((banner) => {
-              const expired = isExpired(banner.expiresAt);
+            {alerts.map((alert) => {
+              const expired = isExpired(alert.expiresAt);
               return (
                 <div
-                  key={banner.id}
+                  key={alert.id}
                   className="flex items-center gap-3 px-4 py-3 min-h-[48px]"
                 >
                   {(() => {
-                    const match = ICON_OPTIONS.find((o) => o.value === banner.icon);
+                    const match = ICON_OPTIONS.find((o) => o.value === alert.icon);
                     const IconComp = match?.Icon ?? Megaphone;
                     return <IconComp className="h-4 w-4 text-muted-foreground shrink-0" />;
                   })()}
                   <div className="flex-1 min-w-0 flex items-center gap-2 flex-wrap">
                     <span className="typo-label text-foreground">
-                      {banner.title}
+                      {alert.title}
                     </span>
                     <Badge variant="outline" className="text-xs font-normal">
-                      {banner.targetType === "ALL"
+                      {alert.targetType === "ALL"
                         ? "Everyone"
-                        : banner.group?.name ?? "Group"}
+                        : alert.group?.name ?? "Group"}
                     </Badge>
-                    {!banner.dismissible && (
+                    {!alert.dismissible && (
                       <Badge variant="secondary" className="text-xs font-normal">
                         fixed
                       </Badge>
@@ -216,7 +215,7 @@ export default function AdminBannersPage() {
                       <Badge variant="destructive" className="text-xs font-normal">
                         expired
                       </Badge>
-                    ) : !banner.active ? (
+                    ) : !alert.active ? (
                       <Badge variant="secondary" className="text-xs font-normal">
                         inactive
                       </Badge>
@@ -226,23 +225,23 @@ export default function AdminBannersPage() {
                       </Badge>
                     )}
                     <span className="typo-meta">
-                      expires {formatDate(banner.expiresAt)}
+                      expires {formatDate(alert.expiresAt)}
                     </span>
-                    {(banner._count?.dismissals ?? 0) > 0 && (
+                    {(alert._count?.dismissals ?? 0) > 0 && (
                       <span className="typo-meta">
-                        · {banner._count!.dismissals} dismissed
+                        · {alert._count!.dismissals} dismissed
                       </span>
                     )}
                   </div>
                   <AdminRowActions actions={[
-                    { label: "Edit", icon: <Pencil className="h-4 w-4 mr-2" />, onClick: () => openEdit(banner) },
+                    { label: "Edit", icon: <Pencil className="h-4 w-4 mr-2" />, onClick: () => openEdit(alert) },
                     "separator",
-                    { label: "Delete", icon: <Trash2 className="h-4 w-4 mr-2" />, onClick: () => deleteBanner(banner.id), destructive: true },
+                    { label: "Delete", icon: <Trash2 className="h-4 w-4 mr-2" />, onClick: () => deleteAlert(alert.id), destructive: true },
                   ]} />
                 </div>
               );
             })}
-            {banners.length === 0 && <AdminEmpty message="No banners yet. Create one to get started." />}
+            {alerts.length === 0 && <AdminEmpty message="No alerts yet. Create one to get started." />}
           </AdminCard>
         </section>
       </div>
@@ -251,15 +250,19 @@ export default function AdminBannersPage() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {editing?.id ? "Edit Banner" : "Add Banner"}
+              {editing?.id ? "Edit Alert" : "Add Alert"}
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); save(); }}>
-            <DialogBody className="space-y-4 py-2">
+          <DialogStepper
+            onComplete={save}
+            onCancel={() => setEditing(null)}
+            completeLabel="Save"
+          >
+            <DialogStep label="Content">
               <div className="space-y-2">
-                <Label htmlFor="banner-title">Title</Label>
+                <Label htmlFor="alert-title">Title</Label>
                 <Input
-                  id="banner-title"
+                  id="alert-title"
                   value={editing?.title ?? ""}
                   onChange={(e) =>
                     setEditing((prev) => prev && { ...prev, title: e.target.value })
@@ -267,11 +270,11 @@ export default function AdminBannersPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="banner-body">
+                <Label htmlFor="alert-body">
                   Body <span className="text-muted-foreground font-normal">(optional)</span>
                 </Label>
                 <Textarea
-                  id="banner-body"
+                  id="alert-body"
                   rows={3}
                   placeholder="Leave empty if the title is the full message"
                   value={editing?.body ?? ""}
@@ -339,12 +342,14 @@ export default function AdminBannersPage() {
                   </SelectContent>
                 </Select>
               </div>
+            </DialogStep>
+            <DialogStep label="Delivery">
               <div className="space-y-2">
-                <Label htmlFor="banner-link">
+                <Label htmlFor="alert-link">
                   Link <span className="text-muted-foreground font-normal">(optional)</span>
                 </Label>
                 <Input
-                  id="banner-link"
+                  id="alert-link"
                   type="url"
                   placeholder="https://example.com"
                   value={editing?.link ?? ""}
@@ -354,9 +359,9 @@ export default function AdminBannersPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="banner-expires">Expires</Label>
+                <Label htmlFor="alert-expires">Expires</Label>
                 <Input
-                  id="banner-expires"
+                  id="alert-expires"
                   type="date"
                   value={editing?.expiresAt ?? ""}
                   onChange={(e) =>
@@ -411,34 +416,30 @@ export default function AdminBannersPage() {
               )}
               <div className="flex items-center gap-2">
                 <Checkbox
-                  id="banner-dismissible"
+                  id="alert-dismissible"
                   checked={editing?.dismissible ?? true}
                   onCheckedChange={(checked) =>
                     setEditing((prev) => prev && { ...prev, dismissible: !!checked })
                   }
                 />
-                <Label htmlFor="banner-dismissible" className="cursor-pointer">
-                  Users can dismiss this banner
+                <Label htmlFor="alert-dismissible" className="cursor-pointer">
+                  Users can dismiss this alert
                 </Label>
               </div>
               <div className="flex items-center gap-2">
                 <Checkbox
-                  id="banner-active"
+                  id="alert-active"
                   checked={editing?.active ?? true}
                   onCheckedChange={(checked) =>
                     setEditing((prev) => prev && { ...prev, active: !!checked })
                   }
                 />
-                <Label htmlFor="banner-active" className="cursor-pointer">
+                <Label htmlFor="alert-active" className="cursor-pointer">
                   Active
                 </Label>
               </div>
-            </DialogBody>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setEditing(null)} className="cursor-pointer">Cancel</Button>
-              <Button type="submit" className="cursor-pointer">Save</Button>
-            </DialogFooter>
-          </form>
+            </DialogStep>
+          </DialogStepper>
         </DialogContent>
       </Dialog>
     </>

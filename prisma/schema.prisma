@@ -16,7 +16,7 @@ model User {
   lastLogin        DateTime          @default(now())
   createdAt        DateTime          @default(now())
   groupId          String?
-  bannerDismissals BannerDismissal[]
+  alertDismissals AlertDismissal[]
   group            Group?            @relation(fields: [groupId], references: [id])
 }
 
@@ -82,36 +82,39 @@ model Group {
   name          String
   defaultPageId String?
   createdAt     DateTime @default(now())
-  banners       Banner[]
+  alerts        Alert[]
   defaultPage   Page?    @relation("GroupDefaultPage", fields: [defaultPageId], references: [id])
   members       User[]
 }
 
-model Banner {
-  id          String            @id @default(cuid())
+model Alert {
+  id          String           @id @default(cuid())
   title       String
   body        String?
-  dismissible Boolean           @default(true)
+  dismissible Boolean          @default(true)
   expiresAt   DateTime
-  targetType  String            @default("ALL")
+  targetType  String           @default("ALL")
   groupId     String?
-  active      Boolean           @default(true)
-  createdAt   DateTime          @default(now())
-  color       String            @default("YELLOW")
+  active      Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  color       String           @default("YELLOW")
   icon        String?
   link        String?
-  group       Group?            @relation(fields: [groupId], references: [id])
-  dismissals  BannerDismissal[]
+  group       Group?           @relation(fields: [groupId], references: [id])
+  dismissals  AlertDismissal[]
+
+  @@map("Banner")
 }
 
-model BannerDismissal {
+model AlertDismissal {
   userId      String
-  bannerId    String
+  alertId     String   @map("bannerId")
   dismissedAt DateTime @default(now())
-  banner      Banner   @relation(fields: [bannerId], references: [id], onDelete: Cascade)
+  alert       Alert    @relation(fields: [alertId], references: [id], onDelete: Cascade)
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@id([userId, bannerId])
+  @@id([userId, alertId])
+  @@map("BannerDismissal")
 }
 
 model Setting {

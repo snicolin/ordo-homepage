@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AdminLoading, AdminEmpty, AdminSectionHeader, AdminCard, AdminRowActions, type AdminAction } from "../components";
+import { AdminLoading, AdminEmpty, AdminSectionHeader, AdminCard, AdminRowActions } from "../components";
 import {
   Dialog,
   DialogBody,
@@ -22,13 +22,26 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   ChevronRight,
+  MoreHorizontal,
   Plus,
   Pencil,
   Trash2,
   Shield,
   ShieldCheck,
+  ShieldOff,
   Users,
+  UserMinus,
   X,
 } from "lucide-react";
 
@@ -257,51 +270,92 @@ export default function AdminUsersPage() {
         <section>
           <AdminSectionHeader title="Users" />
           <AdminCard>
-            {users.map((user) => (
-              <div key={user.id} className="px-4 py-3 min-h-[48px] flex flex-col sm:flex-row sm:items-center gap-3">
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <div className="min-w-0">
+            {users.map((user) => {
+              const isAnyAdmin = user.isAdmin || user.isEnvAdmin;
+              return (
+                <div key={user.id} className="px-4 py-3 min-h-[48px] flex items-center gap-3">
+                  <div className="flex-1 min-w-0">
                     <span className="typo-label text-foreground block truncate">{user.name || "Unknown"}</span>
                     <span className="typo-meta block truncate">{user.email}</span>
                   </div>
+                  <div className="flex items-center gap-2">
+                    {isAnyAdmin && (
+                      <Badge variant="secondary" className="gap-1 shrink-0">
+                        <ShieldCheck className="h-3 w-3" /> Admin
+                      </Badge>
+                    )}
+                    {user.group && (
+                      <Badge variant="outline" className="shrink-0">
+                        {user.group.name}
+                      </Badge>
+                    )}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger
+                        className="inline-flex items-center justify-center h-9 w-9 shrink-0 cursor-pointer rounded-lg hover:bg-muted transition-colors"
+                      >
+                        <MoreHorizontal className="h-4 w-4" />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {!user.isEnvAdmin && (
+                          isAnyAdmin ? (
+                            <DropdownMenuItem
+                              className="cursor-pointer text-destructive"
+                              onClick={() => {
+                                if (confirm("Remove admin access for this user?")) {
+                                  toggleAdmin(user.id, false);
+                                }
+                              }}
+                            >
+                              <ShieldOff className="h-4 w-4 mr-2" />
+                              Remove Admin Access
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem
+                              className="cursor-pointer"
+                              onClick={() => toggleAdmin(user.id, true)}
+                            >
+                              <Shield className="h-4 w-4 mr-2" />
+                              Grant Admin Access
+                            </DropdownMenuItem>
+                          )
+                        )}
+                        {!user.isEnvAdmin && <DropdownMenuSeparator />}
+                        <DropdownMenuSub>
+                          <DropdownMenuSubTrigger className="cursor-pointer">
+                            <Users className="h-4 w-4 mr-2" />
+                            Assign to Group
+                          </DropdownMenuSubTrigger>
+                          <DropdownMenuSubContent>
+                            {groups.map((g) => (
+                              <DropdownMenuItem
+                                key={g.id}
+                                className="cursor-pointer"
+                                disabled={user.groupId === g.id}
+                                onClick={() => setUserGroup(user.id, g.id)}
+                              >
+                                {g.name}
+                              </DropdownMenuItem>
+                            ))}
+                            {groups.length === 0 && (
+                              <DropdownMenuItem disabled>No groups available</DropdownMenuItem>
+                            )}
+                          </DropdownMenuSubContent>
+                        </DropdownMenuSub>
+                        {user.groupId && (
+                          <DropdownMenuItem
+                            className="cursor-pointer text-destructive"
+                            onClick={() => setUserGroup(user.id, null)}
+                          >
+                            <UserMinus className="h-4 w-4 mr-2" />
+                            Remove from Group
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  {user.isEnvAdmin ? (
-                    <Badge variant="secondary" className="gap-1">
-                      <ShieldCheck className="h-3 w-3" /> Admin (env)
-                    </Badge>
-                  ) : (
-                    <Button
-                      variant={user.isAdmin ? "secondary" : "outline"}
-                      size="sm"
-                      className="text-xs h-7 cursor-pointer"
-                      onClick={() => toggleAdmin(user.id, !user.isAdmin)}
-                    >
-                      {user.isAdmin ? <ShieldCheck className="h-3 w-3 mr-1" /> : <Shield className="h-3 w-3 mr-1" />}
-                      {user.isAdmin ? "Admin" : "Make Admin"}
-                    </Button>
-                  )}
-                  <Select
-                    value={user.groupId || "__none__"}
-                    onValueChange={(v) => setUserGroup(user.id, v === "__none__" ? null : v)}
-                  >
-                    <SelectTrigger className="w-[140px] h-7 text-xs">
-                      <SelectValue>
-                        {user.groupId
-                          ? groups.find((g) => g.id === user.groupId)?.name ?? "No Group"
-                          : "No Group"}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__none__">No Group</SelectItem>
-                      {groups.map((g) => (
-                        <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            ))}
+              );
+            })}
             {users.length === 0 && <AdminEmpty message="No users have logged in yet." />}
           </AdminCard>
           <p className="typo-meta mt-3">

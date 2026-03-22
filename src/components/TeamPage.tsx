@@ -3,7 +3,7 @@ import Image from "next/image";
 import Markdown from "react-markdown";
 import AppHeader from "@/components/AppHeader";
 import PillNav from "@/components/PillNav";
-import BannerBar from "@/components/BannerBar";
+import AlertBar from "@/components/AlertBar";
 import CountdownTimer from "@/components/CountdownTimer";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
@@ -91,7 +91,7 @@ export default async function TeamPage({ pageSlug }: { pageSlug: string }) {
       />
 
       <main className={`${containerClass} py-6`}>
-        <BannerBar />
+        <AlertBar />
         {navPosition === "top" && pillNav}
 
         {pageSections.map((ps) => {

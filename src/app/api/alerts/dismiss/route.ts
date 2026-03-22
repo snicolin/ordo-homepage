@@ -17,25 +17,25 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  const { bannerId } = await req.json();
-  if (!bannerId) {
-    return NextResponse.json({ error: "bannerId is required" }, { status: 400 });
+  const { alertId } = await req.json();
+  if (!alertId) {
+    return NextResponse.json({ error: "alertId is required" }, { status: 400 });
   }
 
-  const banner = await prisma.banner.findUnique({ where: { id: bannerId } });
-  if (!banner) {
-    return NextResponse.json({ error: "Banner not found" }, { status: 404 });
+  const alert = await prisma.alert.findUnique({ where: { id: alertId } });
+  if (!alert) {
+    return NextResponse.json({ error: "Alert not found" }, { status: 404 });
   }
-  if (!banner.dismissible) {
-    return NextResponse.json({ error: "This banner cannot be dismissed" }, { status: 403 });
+  if (!alert.dismissible) {
+    return NextResponse.json({ error: "This alert cannot be dismissed" }, { status: 403 });
   }
 
-  await prisma.bannerDismissal.upsert({
+  await prisma.alertDismissal.upsert({
     where: {
-      userId_bannerId: { userId: user.id, bannerId },
+      userId_alertId: { userId: user.id, alertId },
     },
     update: {},
-    create: { userId: user.id, bannerId },
+    create: { userId: user.id, alertId },
   });
 
   return NextResponse.json({ success: true });

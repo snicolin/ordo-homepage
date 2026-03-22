@@ -165,19 +165,18 @@ export default function PageDetailPage() {
 
   async function reorderPageSections(sectionId: string, direction: "up" | "down") {
     if (!page) return;
-    const idx = pageSections.findIndex((ps) => ps.sectionId === sectionId);
+    const ordered = [...pageSections];
+    const idx = ordered.findIndex((ps) => ps.sectionId === sectionId);
     if (idx < 0) return;
     const swapIdx = direction === "up" ? idx - 1 : idx + 1;
-    if (swapIdx < 0 || swapIdx >= pageSections.length) return;
+    if (swapIdx < 0 || swapIdx >= ordered.length) return;
+    [ordered[idx], ordered[swapIdx]] = [ordered[swapIdx], ordered[idx]];
     await fetch("/api/admin/reorder", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         type: "pageSection",
-        items: [
-          { pageId: page.id, sectionId: pageSections[idx].sectionId, order: pageSections[swapIdx].order },
-          { pageId: page.id, sectionId: pageSections[swapIdx].sectionId, order: pageSections[idx].order },
-        ],
+        items: ordered.map((ps, i) => ({ pageId: page.id, sectionId: ps.sectionId, order: i })),
       }),
     });
     await fetchPages();
@@ -224,20 +223,18 @@ export default function PageDetailPage() {
 
   async function reorderItems(sectionId: string, itemId: string, direction: "up" | "down") {
     if (!page) return;
-    const items = sectionItems[sectionId] ?? [];
-    const idx = items.findIndex((i) => i.id === itemId);
+    const ordered = [...(sectionItems[sectionId] ?? [])];
+    const idx = ordered.findIndex((i) => i.id === itemId);
     if (idx < 0) return;
     const swapIdx = direction === "up" ? idx - 1 : idx + 1;
-    if (swapIdx < 0 || swapIdx >= items.length) return;
+    if (swapIdx < 0 || swapIdx >= ordered.length) return;
+    [ordered[idx], ordered[swapIdx]] = [ordered[swapIdx], ordered[idx]];
     await fetch("/api/admin/reorder", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         type: "item",
-        items: [
-          { id: items[idx].id, order: items[swapIdx].order },
-          { id: items[swapIdx].id, order: items[idx].order },
-        ],
+        items: ordered.map((item, i) => ({ id: item.id, order: i })),
       }),
     });
     await fetchItemsForSection(sectionId, page.id);

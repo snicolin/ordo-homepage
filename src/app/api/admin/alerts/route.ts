@@ -7,7 +7,7 @@ export async function GET() {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const banners = await prisma.banner.findMany({
+  const alerts = await prisma.alert.findMany({
     orderBy: { createdAt: "desc" },
     include: {
       group: { select: { id: true, name: true } },
@@ -15,7 +15,7 @@ export async function GET() {
     },
   });
 
-  return NextResponse.json(banners);
+  return NextResponse.json(alerts);
 }
 
 export async function POST(req: Request) {
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json();
-  const { title, body: bannerBody, color, icon, link, dismissible, expiresAt, targetType, groupId, active } = body;
+  const { title, body: alertBody, color, icon, link, dismissible, expiresAt, targetType, groupId, active } = body;
 
   if (!title || typeof title !== "string" || !title.trim()) {
     return NextResponse.json({ error: "title is required" }, { status: 400 });
@@ -43,10 +43,10 @@ export async function POST(req: Request) {
     }
   }
 
-  const banner = await prisma.banner.create({
+  const alert = await prisma.alert.create({
     data: {
       title: title.trim(),
-      body: bannerBody?.trim() || null,
+      body: alertBody?.trim() || null,
       color: color || "YELLOW",
       icon: icon || null,
       link: link?.trim() || null,
@@ -61,7 +61,7 @@ export async function POST(req: Request) {
     },
   });
 
-  return NextResponse.json(banner, { status: 201 });
+  return NextResponse.json(alert, { status: 201 });
 }
 
 export async function PUT(req: Request) {
@@ -70,20 +70,20 @@ export async function PUT(req: Request) {
   }
 
   const body = await req.json();
-  const { id, title, body: bannerBody, color, icon, link, dismissible, expiresAt, targetType, groupId, active } = body;
+  const { id, title, body: alertBody, color, icon, link, dismissible, expiresAt, targetType, groupId, active } = body;
 
   if (!id) {
     return NextResponse.json({ error: "id is required" }, { status: 400 });
   }
 
-  const existing = await prisma.banner.findUnique({ where: { id } });
+  const existing = await prisma.alert.findUnique({ where: { id } });
   if (!existing) {
-    return NextResponse.json({ error: "Banner not found" }, { status: 404 });
+    return NextResponse.json({ error: "Alert not found" }, { status: 404 });
   }
 
   const data: Record<string, unknown> = {};
   if (title !== undefined) data.title = title.trim();
-  if (bannerBody !== undefined) data.body = bannerBody?.trim() || null;
+  if (alertBody !== undefined) data.body = alertBody?.trim() || null;
   if (color !== undefined) data.color = color;
   if (icon !== undefined) data.icon = icon || null;
   if (link !== undefined) data.link = link?.trim() || null;
@@ -103,8 +103,8 @@ export async function PUT(req: Request) {
   if (active !== undefined) data.active = active;
 
   const [, updated] = await prisma.$transaction([
-    prisma.bannerDismissal.deleteMany({ where: { bannerId: id } }),
-    prisma.banner.update({
+    prisma.alertDismissal.deleteMany({ where: { alertId: id } }),
+    prisma.alert.update({
       where: { id },
       data,
       include: {
@@ -128,7 +128,7 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: "id is required" }, { status: 400 });
   }
 
-  await prisma.banner.delete({ where: { id } });
+  await prisma.alert.delete({ where: { id } });
 
   return NextResponse.json({ success: true });
 }
