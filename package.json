@@ -7,10 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "bunx prisma generate",
-    "db:generate": "bunx prisma generate",
-    "db:migrate": "bunx prisma migrate deploy",
-    "db:push": "bunx prisma db push",
+    "postinstall": "prisma generate",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "db:push": "prisma db push",
     "db:seed": "bun run prisma/seed.ts"
   },
   "dependencies": {
