@@ -156,7 +156,7 @@ docker compose -f ${COMPOSE_FILE} restart caddy
 sleep 2
 
 # Verify the container sees the correct upstream
-CONTAINER_UPSTREAM=$(docker compose -f ${COMPOSE_FILE} exec caddy grep -oP '(blue|green):3000' /etc/caddy/Caddyfile | head -1)
+CONTAINER_UPSTREAM=$(docker compose -f ${COMPOSE_FILE} exec caddy grep -o '[a-z]*:3000' /etc/caddy/Caddyfile | head -1)
 if [ "$CONTAINER_UPSTREAM" != "${TARGET}:3000" ]; then
     echo "==> ERROR: Caddy container sees ${CONTAINER_UPSTREAM}, expected ${TARGET}:3000"
     exit 1
