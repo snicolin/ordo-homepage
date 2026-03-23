@@ -18,4 +18,15 @@ export const authConfig: NextAuthConfig = {
     signIn: "/signin",
     error: "/signin",
   },
+  callbacks: {
+    session({ session, token }) {
+      if (session.user) {
+        (session.user as unknown as Record<string, unknown>).isAdmin =
+          token.isAdmin ?? false;
+        (session.user as unknown as Record<string, unknown>).defaultPageSlug =
+          token.defaultPageSlug ?? null;
+      }
+      return session;
+    },
+  },
 };

@@ -25,6 +25,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
   trustHost: true,
   callbacks: {
+    ...authConfig.callbacks,
     async signIn({ account, profile }) {
       if (account?.provider === "google") {
         const email = profile?.email;
@@ -78,13 +79,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
 
       return token;
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        (session.user as unknown as Record<string, unknown>).isAdmin = token.isAdmin ?? false;
-        (session.user as unknown as Record<string, unknown>).defaultPageSlug = token.defaultPageSlug ?? null;
-      }
-      return session;
     },
   },
 });
