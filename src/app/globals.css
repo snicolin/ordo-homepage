@@ -166,7 +166,7 @@
     @apply font-display text-xl font-semibold text-foreground;
   }
   .typo-heading {
-    @apply text-base font-semibold text-foreground;
+    @apply text-lg font-semibold text-foreground;
   }
   .typo-label {
     @apply text-sm font-medium;
