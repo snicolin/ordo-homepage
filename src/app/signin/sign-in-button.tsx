@@ -1,8 +1,18 @@
 "use client";
 
+import { useEffect } from "react";
 import { signIn } from "next-auth/react";
 
 export function SignInButton() {
+  useEffect(() => {
+    document.cookie.split(";").forEach((c) => {
+      const name = c.trim().split("=")[0];
+      if (name.includes("authjs") || name.includes("next-auth")) {
+        document.cookie = `${name}=;expires=${new Date(0).toUTCString()};path=/`;
+      }
+    });
+  }, []);
+
   return (
     <button
       type="button"
