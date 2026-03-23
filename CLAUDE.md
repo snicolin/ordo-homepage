@@ -113,8 +113,10 @@ src/
 1. `git status -sb` — review untracked files, never auto-add `.env*`
 2. `git add` selectively, then `git diff --staged --stat`
 3. Read modified files for context
-4. Commit with descriptive message
-5. `git push origin main` (triggers CI/CD pipeline)
+4. `bunx tsc --noEmit` — abort if typecheck fails, fix errors first
+5. If any changes touch architecture, data model, patterns, or conventions → update `CLAUDE.md` to match (keep updates brief)
+6. Commit with descriptive message
+7. `git push origin main` (triggers CI/CD pipeline)
 
 ### When user types "p" (pull)
 1. `git stash` — save local changes
