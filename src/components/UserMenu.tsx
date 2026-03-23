@@ -1,9 +1,14 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
-import Link from "next/link";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useClickOutside } from "@/lib/hooks";
+import { ChevronDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function UserMenu({
   firstName,
@@ -16,11 +21,7 @@ export default function UserMenu({
   isOnAdmin?: boolean;
   signOutAction: () => Promise<void>;
 }) {
-  const [open, setOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-
-  useClickOutside(menuRef, useCallback(() => setOpen(false), []));
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -35,48 +36,27 @@ export default function UserMenu({
   }, [isAdmin, isOnAdmin, router]);
 
   return (
-    <div className="relative" ref={menuRef}>
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 typo-label text-foreground hover:text-foreground/80 cursor-pointer transition-colors"
-      >
+    <DropdownMenu>
+      <DropdownMenuTrigger className="flex items-center gap-2 typo-label text-foreground hover:text-foreground/80 cursor-pointer transition-colors outline-none">
         {firstName}
-        <svg
-          className={`w-3.5 h-3.5 transition-transform duration-150 ${open ? "rotate-180" : ""}`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
+        <ChevronDown className="h-3.5 w-3.5 transition-transform duration-150 [[data-open]>&]:rotate-180" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {isAdmin && (
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={() => router.push(isOnAdmin ? "/" : "/admin")}
+          >
+            {isOnAdmin ? "Back to HQ" : "Admin"}
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onClick={() => signOutAction()}
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
-      </button>
-
-      {open && (
-        <div className="absolute right-0 mt-2 w-40 bg-popover rounded-lg shadow-lg border border-border py-1 z-50">
-          {isAdmin && (
-            <Link
-              href={isOnAdmin ? "/" : "/admin"}
-              className="block w-full text-left px-4 py-2 typo-body text-foreground hover:bg-muted transition-colors"
-              onClick={() => setOpen(false)}
-            >
-              {isOnAdmin ? "Back to HQ" : "Admin"}
-            </Link>
-          )}
-          <form action={signOutAction}>
-            <button
-              type="submit"
-              className="w-full text-left px-4 py-2 typo-body text-foreground hover:bg-muted cursor-pointer transition-colors"
-            >
-              Sign out
-            </button>
-          </form>
-        </div>
-      )}
-    </div>
+          Sign out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
