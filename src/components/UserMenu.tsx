@@ -37,7 +37,7 @@ export default function UserMenu({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex items-center gap-2 typo-label text-foreground hover:text-foreground/80 cursor-pointer transition-colors outline-none">
+      <DropdownMenuTrigger className="flex items-center gap-2 min-h-[44px] md:min-h-0 typo-label text-foreground hover:text-foreground/80 cursor-pointer transition-colors outline-none">
         {firstName}
         <ChevronDown className="h-3.5 w-3.5 transition-transform duration-150 [[data-open]>&]:rotate-180" />
       </DropdownMenuTrigger>

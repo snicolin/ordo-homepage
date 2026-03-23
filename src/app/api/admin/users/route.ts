@@ -4,6 +4,44 @@ import { isAdmin } from "@/lib/admin";
 import { auth } from "@/auth";
 import { isEnvAdmin } from "@/lib/admin";
 
+const ALLOWED_DOMAINS = ["ordoschools.com", "ordo.com"];
+
+export async function POST(req: Request) {
+  if (!(await isAdmin())) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const body = await req.json();
+  const { email, name } = body;
+
+  if (!email || typeof email !== "string") {
+    return NextResponse.json({ error: "email is required" }, { status: 400 });
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+  const domain = normalizedEmail.split("@")[1];
+  if (!domain || !ALLOWED_DOMAINS.includes(domain)) {
+    return NextResponse.json(
+      { error: "Email must end in @ordoschools.com or @ordo.com" },
+      { status: 400 }
+    );
+  }
+
+  const existing = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+  if (existing) {
+    return NextResponse.json({ error: "A user with this email already exists" }, { status: 409 });
+  }
+
+  const user = await prisma.user.create({
+    data: {
+      email: normalizedEmail,
+      name: name?.trim() || null,
+    },
+  });
+
+  return NextResponse.json(user, { status: 201 });
+}
+
 export async function GET() {
   if (!(await isAdmin())) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });

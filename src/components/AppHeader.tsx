@@ -1,6 +1,8 @@
 import Link from "next/link";
+import Image from "next/image";
 import UserMenu from "@/components/UserMenu";
 import { Badge } from "@/components/ui/badge";
+import { SearchDialog } from "@/components/search-dialog";
 import { signOutAction } from "@/app/actions";
 import { containerClass } from "@/lib/styles";
 
@@ -20,9 +22,11 @@ export default function AppHeader({
       <div className={`${containerClass} py-5 flex items-center justify-between`}>
         <div className="flex items-end gap-3">
           <Link href="/">
-            <img
+            <Image
               src="/images/ordo-logo.svg"
               alt="Ordo HQ"
+              width={28}
+              height={28}
               className="h-7 w-auto"
             />
           </Link>
@@ -32,7 +36,8 @@ export default function AppHeader({
             </Badge>
           )}
         </div>
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
+          <SearchDialog isAdmin={isAdmin} />
           {userName && (
             <UserMenu
               firstName={userName}

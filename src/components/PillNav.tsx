@@ -23,7 +23,7 @@ export default function PillNav({
           <Link
             key={item.key}
             href={item.href}
-            className={`shrink-0 whitespace-nowrap px-4 py-2.5 rounded-md text-sm font-medium transition-all ${
+            className={`shrink-0 whitespace-nowrap px-4 py-3 md:py-2.5 rounded-md text-base md:text-sm font-medium transition-all ${
               isActive
                 ? "bg-card text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground hover:bg-card/50"

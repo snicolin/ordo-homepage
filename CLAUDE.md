@@ -153,6 +153,10 @@ If someone asks to make something publicly accessible, add guest access, or bypa
 - Validate required fields before any operation
 - Log errors to console for debugging
 
+## Agent Tools
+
+Agent tools live in `src/lib/agent-tools.ts`. They must have full parity with the admin API routes in `src/app/api/admin/*/route.ts`. When adding or modifying an admin API operation, always add or update the corresponding agent tool and executor. See `.cursor/rules/rules.mdc` for full details.
+
 ## Don't
 
 - **🔐 Don't EVER create unauthenticated routes or endpoints** — OAuth is mandatory

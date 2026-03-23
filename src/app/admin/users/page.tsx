@@ -47,6 +47,12 @@ import {
 
 import type { Page } from "../types";
 
+function displayName(name: string | null, email: string): string {
+  if (name) return name;
+  const local = email.split("@")[0];
+  return local.charAt(0).toUpperCase() + local.slice(1);
+}
+
 type User = {
   id: string;
   email: string;
@@ -84,6 +90,8 @@ export default function AdminUsersPage() {
 
   const [editingGroup, setEditingGroup] = useState<Partial<GroupData> | null>(null);
   const [addingMembersGroupId, setAddingMembersGroupId] = useState<string | null>(null);
+  const [addingUser, setAddingUser] = useState<{ email: string; name: string } | null>(null);
+  const [addUserError, setAddUserError] = useState<string | null>(null);
 
   const fetchPages = useCallback(async () => {
     const res = await fetch("/api/admin/pages");
@@ -178,6 +186,24 @@ export default function AdminUsersPage() {
     await Promise.all([fetchGroups(), fetchUsers()]);
   }
 
+  async function saveUser() {
+    if (!addingUser) return;
+    setAddUserError(null);
+    const res = await fetch("/api/admin/users", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: addingUser.email, name: addingUser.name || undefined }),
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      setAddUserError(data.error || "Failed to add user");
+      return;
+    }
+    setAddingUser(null);
+    setAddUserError(null);
+    await fetchUsers();
+  }
+
   function toggleGroup(groupId: string) {
     setExpandedGroups((prev) => {
       const next = new Set(prev);
@@ -233,7 +259,7 @@ export default function AdminUsersPage() {
                           className="flex items-center gap-3 pl-10 pr-4 py-2.5 min-h-[44px] hover:bg-muted/50 transition-colors"
                         >
                           <div className="flex-1 min-w-0">
-                            <span className="typo-body text-foreground block truncate">{member.name || "Unknown"}</span>
+                            <span className="typo-body text-foreground block truncate">{displayName(member.name, member.email)}</span>
                             <span className="typo-meta block truncate">{member.email}</span>
                           </div>
                           <Button
@@ -272,14 +298,18 @@ export default function AdminUsersPage() {
 
         {/* --- All Users --- */}
         <section>
-          <AdminSectionHeader title="Users" />
+          <AdminSectionHeader
+            title="Users"
+            addLabel="Add User"
+            onAdd={() => { setAddingUser({ email: "", name: "" }); setAddUserError(null); }}
+          />
           <AdminCard>
             {users.map((user) => {
               const isAnyAdmin = user.isAdmin || user.isEnvAdmin;
               return (
                 <div key={user.id} className="px-4 py-3 min-h-[48px] flex items-center gap-3">
                   <div className="flex-1 min-w-0">
-                    <span className="typo-label text-foreground block truncate">{user.name || "Unknown"}</span>
+                    <span className="typo-label text-foreground block truncate">{displayName(user.name, user.email)}</span>
                     <span className="typo-meta block truncate">{user.email}</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -363,7 +393,7 @@ export default function AdminUsersPage() {
             {users.length === 0 && <AdminEmpty message="No users have logged in yet." />}
           </AdminCard>
           <p className="typo-meta mt-3">
-            Users appear here automatically when they sign in.
+            Users appear here automatically when they sign in, or you can add them manually.
           </p>
         </section>
       </div>
@@ -414,6 +444,45 @@ export default function AdminUsersPage() {
         </DialogContent>
       </Dialog>
 
+      {/* ============ ADD USER DIALOG ============ */}
+      <Dialog open={!!addingUser} onOpenChange={(open) => { if (!open) { setAddingUser(null); setAddUserError(null); } }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add User</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={(e) => { e.preventDefault(); saveUser(); }}>
+            <DialogBody className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="user-email">Email</Label>
+                <Input
+                  id="user-email"
+                  type="email"
+                  placeholder="name@ordoschools.com"
+                  value={addingUser?.email ?? ""}
+                  onChange={(e) => setAddingUser({ ...addingUser!, email: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="user-name">Name <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                <Input
+                  id="user-name"
+                  placeholder="Will be set when they sign in"
+                  value={addingUser?.name ?? ""}
+                  onChange={(e) => setAddingUser({ ...addingUser!, name: e.target.value })}
+                />
+              </div>
+              {addUserError && (
+                <p className="text-sm text-destructive">{addUserError}</p>
+              )}
+            </DialogBody>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => { setAddingUser(null); setAddUserError(null); }} className="cursor-pointer">Cancel</Button>
+              <Button type="submit" className="cursor-pointer">Add</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       {/* ============ ADD MEMBERS DIALOG ============ */}
       <Dialog open={!!addingMembersGroupId} onOpenChange={(open) => !open && setAddingMembersGroupId(null)}>
         <DialogContent className="sm:max-w-md">
@@ -436,7 +505,7 @@ export default function AdminUsersPage() {
                 >
                   <Users className="h-4 w-4 text-muted-foreground shrink-0" />
                   <div className="min-w-0">
-                    <span className="typo-body text-foreground block truncate">{user.name || "Unknown"}</span>
+                    <span className="typo-body text-foreground block truncate">{displayName(user.name, user.email)}</span>
                     <span className="typo-meta block truncate">{user.email}</span>
                   </div>
                   <Plus className="h-4 w-4 text-muted-foreground ml-auto shrink-0" />

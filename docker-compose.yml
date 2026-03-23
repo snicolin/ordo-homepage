@@ -11,6 +11,7 @@ x-app: &app
     GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
     GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
     ADMIN_EMAILS: ${ADMIN_EMAILS:-hunter@ordoschools.com,sheila@ordoschools.com}
+    ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     S3_BUCKET: ${S3_BUCKET:-hq-space}
     S3_REGION: ${S3_REGION:-sfo3}
     S3_ENDPOINT: ${S3_ENDPOINT:-https://sfo3.digitaloceanspaces.com}
